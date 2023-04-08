@@ -46,7 +46,10 @@ python export_disp.py
 
 # トラッキング
 
-上記の出力したカメラ姿勢，逆深度の推定結果をもとに track_berries.py でフレーム間の果粒のトラッキングを行う．get_initial_data() 関数の中のデータのパスを適切に設定した上で以下を実行する．
+上記の出力したカメラ姿勢，逆深度の推定結果をもとに track_berries.py でフレーム間の果粒のトラッキングを行う．get_initial_data() 関数の中のデータのパスを適切に設定する．以下のパラメータを設定する，
+
+* local_bunch_frame_interval: 合計何フレームでバンドル調整を行うか
+* first_frame_idx: バンドル調整を行う連続フレームの最初のインデックス
 
 ```
 python track_berries.py

@@ -10,6 +10,8 @@ from utils.camera_modules import disp_to_depth
 import utils.rotation_matrix as rotation_matrix
 from utils.camera_modules import OmniCamera
 
+import sys
+import numpy
 
 """
 Track berries in adjacent frames by nearest neighbor.
@@ -41,19 +43,47 @@ def berry_clustering_nn(world_coord_list, extrinsic_idx_range, cluster_start_idx
         whole_berry_idx_list[i] = whole_berry_idx_list[i] + max_idx
         max_idx = whole_berry_idx_list[i].max() + 1
 
-    point_connection_list = []
+    # forward_connection_list = []
+    forward_mutual_connection_tuple_list = []
 
-    for cnt, extrinsic_idx in enumerate(extrinsic_idx_range[:-1]):
-        former_berry_pos_array = world_coord_list[extrinsic_idx][:3, :]
-        latter_berry_pos_array = world_coord_list[extrinsic_idx + 1][:3, :]
+    for cnt, frame_idx in enumerate(range(extrinsic_idx_range[0], extrinsic_idx_range[-1])):
+        former_berry_pos_array = world_coord_list[frame_idx][:3, :].copy()
+        latter_berry_pos_array = world_coord_list[frame_idx + 1][:3, :].copy()
+
         forward_nn_connections, backward_nn_connection, mutual_nn_connections = make_nn_connections(
             former_berry_pos_array, latter_berry_pos_array)
 
-        for frame_point_idx in range(mutual_nn_connections.shape[0]):
-            if (mutual_nn_connections[frame_point_idx, frame_point_idx] == 1): # When m th berry is mutually nearest neighbor forward and backward
-                current_idx = whole_berry_idx_list[cnt][frame_point_idx]
-                next_idx = np.argmax(forward_nn_connections[frame_point_idx])
-                whole_berry_idx_list[cnt + 1][next_idx] = current_idx
+        forward_mutual_connection_tuple_list.append((forward_nn_connections, mutual_nn_connections))
+
+
+
+
+    for cnt_0, extrinsic_idx in enumerate(range(frame_idx_range[0], frame_idx_range[-1])):
+        mutual_nn_connections = forward_mutual_connection_tuple_list[cnt_0][1]
+        forward_nn_connections = forward_mutual_connection_tuple_list[cnt_0][0]
+        
+        for cnt_1 in range(mutual_nn_connections.shape[0]):
+            if (mutual_nn_connections[cnt_1, cnt_1] == 1):
+                current_idx = whole_berry_idx_list[cnt_0][cnt_1]
+                next_idx = np.argmax(forward_nn_connections[cnt_1])
+                whole_berry_idx_list[cnt_0 + 1][next_idx] = current_idx
+
+
+
+    # for cnt, extrinsic_idx in enumerate(extrinsic_idx_range[-1]):
+    #     former_berry_pos_array = world_coord_list[extrinsic_idx][:3, :]
+    #     latter_berry_pos_array = world_coord_list[extrinsic_idx + 1][:3, :]
+    #     forward_nn_connections, backward_nn_connection, mutual_nn_connections = make_nn_connections(
+    #         former_berry_pos_array, latter_berry_pos_array)
+    #
+    #     for frame_point_idx in range(mutual_nn_connections.shape[0]):
+    #         if (mutual_nn_connections[frame_point_idx, frame_point_idx] == 1): # When m th berry is mutually nearest neighbor forward and backward
+    #             current_idx = whole_berry_idx_list[cnt][frame_point_idx]
+    #             next_idx = np.argmax(forward_nn_connections[frame_point_idx])
+    #             whole_berry_idx_list[cnt + 1][next_idx] = current_idx
+
+
+
 
     berry_tracked_idx_array = np.concatenate(whole_berry_idx_list, 0)
     tracked_berry_range = np.unique(berry_tracked_idx_array)
@@ -99,8 +129,10 @@ def get_extrinsic_and_world_coord(camera, extracted_frame_index_range, center_co
 
     # Converting 3d positions of berries in each camera coordinate to the world coordiante.
     for extrinsic_idx, frame_idx in enumerate(frame_idx_range):
+
         # Gets the disp of No. frame_idx disp (inverse depth used internally in deep learning code)
         disp = disp_array[frame_idx]
+
         # Converts the inverse depth to the depth of omnidirectional camera, whose range is from 1 to 100
         _, depth = disp_to_depth(disp, 1, 100)
         depth = np.expand_dims(depth, 0)
@@ -113,6 +145,7 @@ def get_extrinsic_and_world_coord(camera, extracted_frame_index_range, center_co
         homogeneous_dimension = torch.from_numpy(np.ones((1, x_s.shape[0])))
         x_s = torch.transpose(x_s, 0, 1)
         homogeneous_x_s = np.concatenate([x_s, homogeneous_dimension])
+
         # Converts the camera coord to the world coord.
         x_s_world_coord = np.dot(np.linalg.inv(extrinsic_matrix_list[extrinsic_idx]), homogeneous_x_s)
         world_coord_list.append(x_s_world_coord)
@@ -162,7 +195,8 @@ def track_berries(world_coord_list, center_coords, start_frame_idx, last_frame_i
 
     berry_cluster_idx_tracked, _, _ = berry_clustering_nn(world_coord_list, extrinsic_idx_range, cluster_start_idx)
 
-    frame_idx_array_list.append(frame_idx_array_to_track)
+    frame_idx_array_list.append(berry_cluster_idx_tracked)
+    # frame_idx_array_list.append(frame_idx_array_to_track)
 
     idx_of_interest = berry_cluster_idx_tracked != -1
 
@@ -219,6 +253,7 @@ def merge_tracked_data(berry_cluster_idx_tracked, berry_pos_to_cluster, points_2
     point_indexes = berry_indexes_before_merge[tracked_unique_berry_index]
     points_2d = points_2d_before_merge[tracked_unique_berry_index]
 
+
     # Mapping berry indexes to new consecutive indexes
     # * berry_indexes are not consecutive, and coudl be much bigger than the size of total 3d berry points
     unique_point_indexes = np.unique(point_indexes)
@@ -226,8 +261,9 @@ def merge_tracked_data(berry_cluster_idx_tracked, berry_pos_to_cluster, points_2
 
     # Maps a former_point_idx to a reassigned_point_idx, and also maps indexes related (point_indexes )
     for reassigned_point_idx, former_point_idx in enumerate(unique_point_indexes):
-        extracted_indices = point_indices == former_point_idx
+        extracted_indices = point_indexes == former_point_idx
         point_indexes_reassigned[extracted_indices] = reassigned_point_idx + 1
+
 
     return world_points, camera_indices, point_indexes_reassigned, points_2d
 
@@ -253,7 +289,6 @@ if __name__ == "__main__":
 
     # A class for calcualtion with a caribrated omnidirectional camera model.
     camera_class = OmniCamera(batch_size, height, width, K, inv_K, xi, norm_coeffs, device)
-
 
     local_bunch_frame_interval = 50 # How many frames to use for bundle adjustment
     first_frame_idx = 0 # The first frame
@@ -281,23 +316,7 @@ if __name__ == "__main__":
                    points_2d,
                    list(range(camera_indices.min(), camera_indices.max() + 1))]
 
-    print("bundle_data[1]")
-    print(bundle_data[1])
-    print()
-    print("bundle_data[3]")
-    print(bundle_data[3])
-    print()
-    print("bundle_data[4]")
-    print(bundle_data[4])
-    print()
-
-
-    # sample_indexes_pair_list = [(frame_idx_range[0], frame_idx_range[-1])]
-    # f = open('bundle_data_overlapped_nn_R0011010_' + str(sample_indexes_pair_list[0][0])+ '_' + str(sample_indexes_pair_list[0][1])+ '.txt', 'wb')
-    # pickle.dump(sample_bundle_data, f)
-
-    # sample_indexes_pair_list = [(frame_idx_range[0], frame_idx_range[-1])]
-    f = open('bundle_data_R0011010_' + str(frame_idx_range[0])+ '_' + str(frame_idx_range[-1])+ '.txt', 'wb')
+    f = open('tracked_berry_data/bundle_data_R0011010_' + str(frame_idx_range[0])+ '_' + str(frame_idx_range[-1])+ '.txt', 'wb')
     pickle.dump(bundle_data, f)
 
 
