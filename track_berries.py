@@ -69,22 +69,6 @@ def berry_clustering_nn(world_coord_list, extrinsic_idx_range, cluster_start_idx
                 whole_berry_idx_list[cnt_0 + 1][next_idx] = current_idx
 
 
-
-    # for cnt, extrinsic_idx in enumerate(extrinsic_idx_range[-1]):
-    #     former_berry_pos_array = world_coord_list[extrinsic_idx][:3, :]
-    #     latter_berry_pos_array = world_coord_list[extrinsic_idx + 1][:3, :]
-    #     forward_nn_connections, backward_nn_connection, mutual_nn_connections = make_nn_connections(
-    #         former_berry_pos_array, latter_berry_pos_array)
-    #
-    #     for frame_point_idx in range(mutual_nn_connections.shape[0]):
-    #         if (mutual_nn_connections[frame_point_idx, frame_point_idx] == 1): # When m th berry is mutually nearest neighbor forward and backward
-    #             current_idx = whole_berry_idx_list[cnt][frame_point_idx]
-    #             next_idx = np.argmax(forward_nn_connections[frame_point_idx])
-    #             whole_berry_idx_list[cnt + 1][next_idx] = current_idx
-
-
-
-
     berry_tracked_idx_array = np.concatenate(whole_berry_idx_list, 0)
     tracked_berry_range = np.unique(berry_tracked_idx_array)
 
