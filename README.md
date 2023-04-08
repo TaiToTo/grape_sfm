@@ -5,33 +5,44 @@
 
 # 教師なし単眼深度推定
 
-Docker の環境構築にしたコードは以下の通り
+Docker の環境構築に使用したコードは以下の通り
 
 ```bash
-docker run -v /disk021/usrs/tamura:/workspace --name tamura_monodepth2_env --shm-size 4G --gpus all -itd -p 7775:7775 pytorch/pytorch:1.11.0-cuda11.3-cudnn8-devel
+docker run -v /disk021/usrs/tamura:/workspace \
+          --name tamura_monodepth2_env \
+          --shm-size 4G --gpus all -itd -p 7775:7775 \
+          pytorch/pytorch:1.11.0-cuda11.3-cudnn8-devel
 ```
 
 適宜必要なライブラリをインストールする．そして，workspace内で教師なし単眼深度推定の訓練を実行するコマンドは以下の通り
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 python train.py --model_name grape_omni_hikituki_demo  --log_dir ./models --data_path '/workspace/grape_frame_datasets_4' --split 'grape_omni' --dataset 'grape_omni' --height 480 --width 480 --batch_size 8 --min_depth 1 --max_depth 100 --epipolar_weight 1e-4 --num_epochs 10
+CUDA_VISIBLE_DEVICES=0 python train.py --model_name grape_omni_hikituki_demo \
+                                        --log_dir ./models --data_path '/workspace/grape_frame_datasets_4' \
+                                        --split 'grape_omni' --dataset 'grape_omni' \
+                                        --height 480 \
+                                        --width 480 \
+                                        --batch_size 8 \
+                                        --min_depth 1 \
+                                        --max_depth 100 \
+                                        --epipolar_weight 1e-4 \
+                                        --num_epochs 10
 ```
 各引数の意味は以下の通り
 
 * model_name: 訓練するモデルの任意に設定する名前
-* log_dir: モデルが保存されるディレクトリ．訓練時にあらかじめ作って置かないとモデルが保存されない.
-* data_path: データセットをおくディレクトリ
+* log_dir: モデルが保存されるディレクトリ．訓練時にあらかじめ作っておかないとモデルが保存されない. * data_path: データセットをおくディレクトリ
 * split: 訓練のスプリットの種類の名前
 * dataset: データセットの名前
 * min_depth, max_depth: 全方位カメラの深度の範囲
-* epipolar_weight: scale_aware_constraint の係数．(最初期につけた名前なので，変更するべき)
+* epipolar_weight: scale_aware_constraint の係数のこと．(最初期につけた名前なので，変更するべき)
 
 訓練したモデルのパスを　model_path に設定して　export_camera_pose.py, export_disp.py　を実行することで，果粒のトラッキングに必要な NumPy データが出力される．(e.g. cam_pose_array_R0010110.npy, disp_array_R0010110.npy)
 ```
 python export_camera_pose.py
 python export_disp.py
 ```
-実装はほとんど Monodepth 2 を元にしている
+実装はほとんど Monodepth 2 を元にしている. (https://github.com/nianticlabs/monodepth2)
 
 # トラッキング
 
@@ -51,7 +62,7 @@ python track_berries.py
 ```
 python main.py
 ```
-バンドル調整の結果は，クラスとして pickle ファイルで保存される (e.g. bundle_simultaneous_0_49.pickle)
+バンドル調整の結果は，クラスとして pickle ファイルで保存される. (e.g. bundle_simultaneous_0_49.pickle)
 
 visualize_partial_bundle_adjustment_results.ipynb　でバンドル調整の結果を可視化することができる．
 
