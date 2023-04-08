@@ -3,7 +3,7 @@ import numpy as np
 import torch
 import os
 
-from utils.grape_bunch_module import PartialBunch
+from grape_utils.grape_bunch_module import PartialBunch
 
 def partial_grape_bundle_adjustment(partial_bunch, frame_index_pair):
     #residual_list = []
@@ -62,7 +62,7 @@ if __name__ == "__main__":
         './data_folder/disp_array_R0010110.npy')  # Inverse depth estimated by monocular depth estimation.
     norm_coeffs = np.expand_dims(np.load('./data_folder/depth_coeffs.npy'), 0)  # Cofficients of depths (x norms).
     # f = open("./bundle_data_overlapped_nn_R0011010_" + str(first_frame_index) + "_" + str(last_frame_index) + ".txt","rb")
-    f = open("./bundle_data_R0011010_" + str(first_frame_index) + "_" + str(last_frame_index) + ".txt",
+    f = open("./tracked_berry_data/bundle_data_R0011010_" + str(first_frame_index) + "_" + str(last_frame_index) + ".txt",
              "rb")
 
     print("Loading initial 2d berrycoordinates")

@@ -6,9 +6,9 @@ import torch
 
 from sklearn.neighbors import NearestNeighbors
 
-from utils.camera_modules import disp_to_depth
-import utils.rotation_matrix as rotation_matrix
-from utils.camera_modules import OmniCamera
+from grape_utils.camera_modules import disp_to_depth
+import grape_utils.rotation_matrix as rotation_matrix
+from grape_utils.camera_modules import OmniCamera
 
 import sys
 import numpy
