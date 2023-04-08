@@ -37,6 +37,8 @@ CUDA_VISIBLE_DEVICES=0 python train.py --model_name grape_omni_hikituki_demo \
 * min_depth, max_depth: 全方位カメラの深度の範囲
 * epipolar_weight: scale_aware_constraint の係数のこと．(最初期につけた名前なので，変更するべき)
 
+使用したデータセットはサーバの　/disk021/usrs/tamura/grape_frame_datasets_4　においてある．
+
 訓練したモデルのパスを　model_path に設定して　export_camera_pose.py, export_disp.py　を実行することで，果粒のトラッキングに必要な NumPy データが出力される．(e.g. cam_pose_array_R0010110.npy, disp_array_R0010110.npy)
 ```
 python export_camera_pose.py
