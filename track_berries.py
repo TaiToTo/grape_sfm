@@ -298,8 +298,8 @@ if __name__ == "__main__":
                    camera_indices - first_frame_idx,
                    point_indexes_reassigned,
                    points_2d,
-                   list(range(camera_indices.min(), camera_indices.max() + 1))]
-
+                   list(frame_idx_range)]
+                   
     f = open('tracked_berry_data/bundle_data_R0011010_' + str(frame_idx_range[0])+ '_' + str(frame_idx_range[-1])+ '.txt', 'wb')
     pickle.dump(bundle_data, f)
 

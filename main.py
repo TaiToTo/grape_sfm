@@ -58,12 +58,9 @@ if __name__ == "__main__":
     print("Loading depth data")
     print("Loading coefficients of backprojections with unified omnidirectional camera model")
     print()
-    disp_array = np.load(
-        './data_folder/disp_array_R0010110.npy')  # Inverse depth estimated by monocular depth estimation.
+    disp_array = np.load('./data_folder/disp_array_R0010110.npy')  # Inverse depth estimated by monocular depth estimation.
     norm_coeffs = np.expand_dims(np.load('./data_folder/depth_coeffs.npy'), 0)  # Cofficients of depths (x norms).
-    # f = open("./bundle_data_overlapped_nn_R0011010_" + str(first_frame_index) + "_" + str(last_frame_index) + ".txt","rb")
-    f = open("./tracked_berry_data/bundle_data_R0011010_" + str(first_frame_index) + "_" + str(last_frame_index) + ".txt",
-             "rb")
+    f = open("./data_folder/bundle_data_R0011010_" + str(first_frame_index) + "_" + str(last_frame_index) + ".txt", "rb")
 
     print("Loading initial 2d berrycoordinates")
     print("Loading initial extrinsic paramters")
