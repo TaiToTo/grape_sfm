@@ -300,7 +300,7 @@ if __name__ == "__main__":
                    points_2d,
                    list(frame_idx_range)]
                    
-    f = open('tracked_berry_data/bundle_data_R0011010_' + str(frame_idx_range[0])+ '_' + str(frame_idx_range[-1])+ '.txt', 'wb')
+    f = open('bundle_data/bundle_data_R0011010_' + str(frame_idx_range[0])+ '_' + str(frame_idx_range[-1])+ '.txt', 'wb')
     pickle.dump(bundle_data, f)
 
 
